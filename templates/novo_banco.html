@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle"></i> Novo Banco
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">
+                                <strong>Nome da Conta <span class="text-danger">*</span></strong>
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" placeholder="ex: Conta Corrente Banco X" required>
+                            <small class="form-text text-muted">Nome que identifica a conta bancária</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="numero_banco" class="form-label">
+                                        <strong>Número do Banco <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="numero_banco" name="numero_banco" placeholder="ex: 001" required>
+                                    <small class="form-text text-muted">Código do banco (BACEN)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="agencia" class="form-label">
+                                        <strong>Agência <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="agencia" name="agencia" placeholder="ex: 0001" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="conta" class="form-label">
+                                        <strong>Conta <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="conta" name="conta" placeholder="ex: 123456-X" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo_conta" class="form-label">
+                                        <strong>Tipo de Conta</strong>
+                                    </label>
+                                    <select class="form-select" id="tipo_conta" name="tipo_conta">
+                                        <option value="Corrente">Corrente</option>
+                                        <option value="Poupança">Poupança</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="saldo" class="form-label">
+                                        <strong>Saldo Inicial</strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="saldo" name="saldo" placeholder="0,00" value="0,00">
+                                    <small class="form-text text-muted">Use ponto ou vírgula como separador decimal</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('bancos') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Banco
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

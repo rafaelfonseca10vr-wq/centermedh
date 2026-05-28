@@ -1,0 +1,590 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Venda (Grade) - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-2">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h4 class="fw-bold mb-0">
+                Pedido Nº:
+                <span class="text-primary">
+                    {% if edicao and venda %}{{ venda.numero_venda }}{% else %}Novo Pedido{% endif %}
+                </span>
+            </h4>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-home me-1"></i>Menu
+            </a>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="text-success fw-bold" style="letter-spacing: 2px;">Pedidos</h2>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 mb-2">
+            <label for="cliente_nome" class="form-label">Cliente</label>
+            <input type="text" class="form-control" id="cliente_nome" placeholder="INFORME O NOME DO CLIENTE" autocomplete="off" value="{% if edicao and venda %}{{ venda.cliente.nome }}{% endif %}">
+            <input type="hidden" id="cliente_id" name="cliente_id" value="{% if edicao and venda %}{{ venda.cliente_id }}{% endif %}">
+            <div class="autocomplete-list" id="cliente_autocomplete" style="position:relative;"></div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <label for="vendedor_nome" class="form-label">Vendedor</label>
+            <input type="text" class="form-control" id="vendedor_nome" placeholder="SELECIONE O VENDEDOR" autocomplete="off" value="{% if edicao and venda %}{{ venda.vendedor.nome }}{% endif %}">
+            <input type="hidden" id="vendedor_id" name="vendedor_id" value="{% if edicao and venda %}{{ venda.vendedor_id }}{% endif %}">
+            <div class="autocomplete-list" id="vendedor_autocomplete" style="position:relative;"></div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <label for="data_emissao" class="form-label">Data Emissão</label>
+            <input type="date" class="form-control" id="data_emissao" value="{% if edicao and venda %}{{ venda.data_venda.strftime('%Y-%m-%d') }}{% else %}{{ data_hoje }}{% endif %}">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-12">
+            <h5 class="text-center text-decoration-underline mb-3">Itens do pedido</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="tabela-venda">
+                    <thead class="table-success text-center align-middle">
+                        <tr>
+                            <th>Produto</th>
+                            <th>Saldo<br>Estoque</th>
+                            <th>Qtde.</th>
+                            <th>Preço</th>
+                            <th>Desconto</th>
+                            <th>Total</th>
+                            <th>Brinde</th>
+                            <th>Troca</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grupo in grupos %}
+                        <tr class="table-group" data-grupo-id="grupo{{ grupo.id }}" style="cursor:pointer;">
+                            <td colspan="8" class="bg-success bg-opacity-25 fw-bold text-success" style="font-size:0.98em;">
+                                <i class="fas fa-chevron-right me-1"></i> {{ grupo.nome }}
+                            </td>
+                        </tr>
+                        {% for produto in grupo.produtos %}
+                        <tr class="produto-linha grupo{{ grupo.id }}" style="display:none;">
+                            <td>{{ produto.nome }}</td>
+                            <td class="text-center fw-bold {% if produto.estoque <= 0 %}text-danger{% else %}text-success{% endif %}">{{ produto.estoque }}</td>
+                            <td><input type="number" min="0" max="{{ produto.estoque }}" class="form-control form-control-sm text-end qtde-input" data-preco="{{ produto.preco_venda }}" data-produto-id="{{ produto.id }}"></td>
+                            <td class="text-end">R$ {{ '%.2f'|format(produto.preco_venda) }}</td>
+                            <td><input type="number" min="0" step="0.01" class="form-control form-control-sm text-end desconto-input" value="0" data-produto-id="{{ produto.id }}"></td>
+                            <td class="text-end total-item">R$ 0,00</td>
+                            <td><input type="text" class="form-control form-control-sm brinde-input"></td>
+                            <td><input type="text" class="form-control form-control-sm troca-input"></td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-12 col-md-6 offset-md-6">
+            <div class="card p-3 bg-light">
+                <div class="row mb-2">
+                    <div class="col-6 text-end fw-bold">Subtotal:</div>
+                    <div class="col-6 text-end" id="subtotal">R$ 0,00</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6 text-end fw-bold">Desconto:</div>
+                    <div class="col-6 text-end"><input type="number" min="0" step="0.01" class="form-control form-control-sm d-inline-block w-50" id="desconto" value="{% if edicao and venda %}{{ '%.2f'|format(venda.desconto or 0) }}{% else %}0.00{% endif %}"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6 text-end fw-bold">Total:</div>
+                    <div class="col-6 text-end fw-bold text-success" id="total">R$ 0,00</div>
+                </div>
+                
+                <!-- Forma de Pagamento -->
+                <div class="row mb-2">
+                    <div class="col-6 text-end fw-bold">Forma Pagamento:</div>
+                    <div class="col-6">
+                        <select class="form-select form-select-sm" id="forma_pagamento">
+                            <option value="Dinheiro" {% if edicao and venda and venda.forma_pagamento == 'Dinheiro' %}selected{% endif %}>Dinheiro</option>
+                            <option value="PIX" {% if edicao and venda and venda.forma_pagamento == 'PIX' %}selected{% endif %}>PIX</option>
+                            <option value="Cartão Débito" {% if edicao and venda and venda.forma_pagamento == 'Cartão Débito' %}selected{% endif %}>Cartão Débito</option>
+                            <option value="Cartão Crédito" {% if edicao and venda and venda.forma_pagamento == 'Cartão Crédito' %}selected{% endif %}>Cartão Crédito</option>
+                            <option value="Boleto" {% if edicao and venda and venda.forma_pagamento == 'Boleto' %}selected{% endif %}>Boleto</option>
+                            <option value="Transferência" {% if edicao and venda and venda.forma_pagamento == 'Transferência' %}selected{% endif %}>Transferência</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Tipo de Pagamento (À Vista / A Prazo) -->
+                <div class="row mb-2">
+                    <div class="col-6 text-end fw-bold">Tipo Pagamento:</div>
+                    <div class="col-6">
+                        <select class="form-select form-select-sm" id="tipo_pagamento" onchange="toggleParcelamento()">
+                            <option value="A Vista" {% if edicao and venda and venda.tipo_pagamento == 'A Vista' %}selected{% endif %}>À Vista</option>
+                            <option value="A Prazo" {% if edicao and venda and venda.tipo_pagamento == 'A Prazo' %}selected{% endif %}>A Prazo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Número de Parcelas (aparece quando for A Prazo) -->
+                <div class="row mb-2" id="div_parcelas" style="display: none;">
+                    <div class="col-6 text-end fw-bold">Nº Parcelas:</div>
+                    <div class="col-6">
+                        <input type="number" min="2" max="52" class="form-control form-control-sm" id="numero_parcelas" value="{% if edicao and venda %}{{ venda.numero_parcelas }}{% else %}2{% endif %}">
+                    </div>
+                </div>
+                
+                <!-- Dias de Cada Parcela (aparece quando for A Prazo) -->
+                <div class="row mb-2" id="div_dias_parcelas" style="display: none;">
+                    <div class="col-12">
+                        <div class="fw-bold mb-2">Dias de Vencimento por Parcela:</div>
+                        <div id="container_dias_parcelas">
+                            <!-- Campos dinâmicos serão adicionados aqui -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Valor da Parcela (aparece quando for A Prazo) -->
+                <div class="row mb-2" id="div_valor_parcela" style="display: none;">
+                    <div class="col-6 text-end fw-bold">Valor Parcela:</div>
+                    <div class="col-6 text-end fw-bold text-info" id="valor_parcela">R$ 0,00</div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-2">
+                    <button class="btn btn-success btn-lg" id="btnFinalizarVenda"><i class="fas fa-check me-1"></i>Finalizar Venda</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table-group td {
+    background: linear-gradient(90deg, #d4edda 0%, #e9f7ef 100%);
+    font-size: 0.98em;
+    letter-spacing: 1px;
+    padding: 4px 8px !important;
+}
+.table th, .table td {
+    font-size: 0.93em;
+    padding: 4px 8px !important;
+}
+.table thead th {
+    font-size: 0.95em;
+    font-weight: 600;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+input.form-control, input.form-control-sm, .form-label {
+    font-size: 0.93em !important;
+    padding: 2px 6px !important;
+    height: 28px !important;
+}
+.card, .card-body, .card-header {
+    padding: 10px 12px !important;
+}
+.btn, .btn-lg {
+    font-size: 0.98em !important;
+    padding: 6px 16px !important;
+}
+.autocomplete-list {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #b2dfdb;
+    border-radius: 0 0 4px 4px;
+    max-height: 180px;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: none;
+}
+.autocomplete-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+.autocomplete-item:hover, .autocomplete-item.active {
+    background: #e0f2f1;
+}
+@media (max-width: 768px) {
+    .table-responsive { font-size: 0.90em; }
+    .table th, .table td { padding: 2px 4px !important; }
+    input.form-control, input.form-control-sm { height: 24px !important; font-size: 0.90em !important; }
+}
+</style>
+
+<script>
+// Autocomplete Cliente e Vendedor
+const clientes = [
+    {% for c in clientes %}{ id: {{c.id}}, nome: "{{c.nome|e}}" },{% endfor %}
+];
+const vendedores = [
+    {% for v in vendedores %}{ id: {{v.id}}, nome: "{{v.nome|e}}" },{% endfor %}
+];
+
+// --- INÍCIO: Preenchimento automático dos itens ao editar ---
+{% if edicao and itens %}
+const itensVenda = [
+    {% for item in itens %}
+    {
+        produto_id: {{ item.produto_id }},
+        quantidade: {{ item.quantidade }},
+        preco_unitario: {{ '%.2f'|format(item.preco_unitario) }},
+        desconto: {{ '%.2f'|format(item.desconto or 0) }},
+        brinde: "{{ item.brinde or '' }}",
+        troca: "{{ item.troca or '' }}"
+    },
+    {% endfor %}
+];
+window.addEventListener('DOMContentLoaded', function() {
+    // Preencher os campos dos produtos vendidos
+    itensVenda.forEach(function(item) {
+        // Expandir grupo do produto
+        var linhaProduto = document.querySelector('tr.produto-linha input.qtde-input[data-produto-id="'+item.produto_id+'"]');
+        if (linhaProduto) {
+            var tr = linhaProduto.closest('tr');
+            tr.style.display = '';
+            // Preencher quantidade
+            linhaProduto.value = item.quantidade;
+            // Preencher desconto
+            var descontoInput = tr.querySelector('input.desconto-input');
+            if (descontoInput) descontoInput.value = item.desconto;
+            // Preencher brinde
+            var brindeInput = tr.querySelector('input.brinde-input');
+            if (brindeInput) brindeInput.value = item.brinde;
+            // Preencher troca
+            var trocaInput = tr.querySelector('input.troca-input');
+            if (trocaInput) trocaInput.value = item.troca;
+            // Atualizar total do item
+            var preco = parseFloat(item.preco_unitario);
+            var total = (preco * item.quantidade) - item.desconto;
+            var totalTd = tr.querySelector('.total-item');
+            if (totalTd) totalTd.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+        }
+        // Expandir grupo visualmente
+        var grupoTr = document.querySelector('tr.table-group[data-grupo-id]');
+        if (grupoTr) grupoTr.style.display = '';
+    });
+    // Atualizar totais gerais
+    atualizarTotaisVenda();
+});
+{% endif %}
+// --- FIM: Preenchimento automático dos itens ao editar ---
+
+function setupAutocomplete(inputId, listId, hiddenId, dataList) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    const hidden = document.getElementById(hiddenId);
+    let currentFocus = -1;
+
+    input.addEventListener('focus', function() {
+        showList(dataList);
+    });
+    input.addEventListener('input', function() {
+        const val = this.value.trim().toLowerCase();
+        if (!val) {
+            showList(dataList);
+            return;
+        }
+        const filtered = dataList.filter(item => item.nome.toLowerCase().startsWith(val));
+        showList(filtered);
+    });
+    input.addEventListener('keydown', function(e) {
+        let items = list.querySelectorAll('.autocomplete-item');
+        if (e.key === 'ArrowDown') {
+            currentFocus++;
+            addActive(items);
+        } else if (e.key === 'ArrowUp') {
+            currentFocus--;
+            addActive(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentFocus > -1 && items[currentFocus]) {
+                items[currentFocus].click();
+            }
+        }
+    });
+    document.addEventListener('click', function(e) {
+        if (!list.contains(e.target) && e.target !== input) {
+            list.style.display = 'none';
+        }
+    });
+    function showList(arr) {
+        list.innerHTML = '';
+        if (!arr.length) { list.style.display = 'none'; return; }
+        arr.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.textContent = item.nome;
+            div.onclick = function() {
+                input.value = item.nome;
+                hidden.value = item.id;
+                list.style.display = 'none';
+            };
+            list.appendChild(div);
+        });
+        list.style.display = 'block';
+        currentFocus = -1;
+    }
+    function addActive(items) {
+        if (!items.length) return;
+        removeActive(items);
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        items[currentFocus].classList.add('active');
+    }
+    function removeActive(items) {
+        items.forEach(item => item.classList.remove('active'));
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Expandir/recolher grupos
+    document.querySelectorAll('.table-group').forEach(function(grupoRow) {
+        grupoRow.addEventListener('click', function() {
+            const grupoId = this.getAttribute('data-grupo-id');
+            const linhas = document.querySelectorAll('.' + grupoId);
+            const icone = this.querySelector('i');
+            let expanded = false;
+            linhas.forEach(function(linha) {
+                if (linha.style.display === 'none') {
+                    linha.style.display = '';
+                    expanded = true;
+                } else {
+                    const input = linha.querySelector('.qtde-input');
+                    if (input && (!input.value || input.value == '0')) {
+                        linha.style.display = 'none';
+                    } else {
+                        expanded = true;
+                    }
+                }
+            });
+            if (icone) {
+                icone.className = expanded ? 'fas fa-chevron-down me-1' : 'fas fa-chevron-right me-1';
+            }
+        });
+    });
+    // Sempre mostrar linhas com quantidade preenchida
+    document.querySelectorAll('.qtde-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (this.value && this.value != '0') {
+                this.closest('tr').style.display = '';
+            }
+        });
+    });
+    // Atualiza total do item e subtotal ao alterar quantidade ou desconto
+    document.querySelectorAll('.qtde-input, .desconto-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            const tr = this.closest('tr');
+            const preco = parseFloat(tr.querySelector('.qtde-input').dataset.preco);
+            const qtde = parseInt(tr.querySelector('.qtde-input').value) || 0;
+            const desconto = parseFloat(tr.querySelector('.desconto-input').value) || 0;
+            let total = (preco * qtde) - desconto;
+            if (total < 0) total = 0;
+            const totalTd = tr.querySelector('.total-item');
+            totalTd.textContent = `R$ ${total.toFixed(2)}`;
+            atualizarSubtotal();
+        });
+    });
+    setupAutocomplete('cliente_nome', 'cliente_autocomplete', 'cliente_id', clientes);
+    setupAutocomplete('vendedor_nome', 'vendedor_autocomplete', 'vendedor_id', vendedores);
+
+    // Calcular valor da parcela quando alterar número de parcelas
+    document.getElementById('numero_parcelas').addEventListener('input', calcularParcelas);
+
+    document.getElementById('btnFinalizarVenda').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Coletar dados do formulário
+        const cliente_id = document.getElementById('cliente_id').value;
+        const vendedor_id = document.getElementById('vendedor_id').value;
+        const data_emissao = document.getElementById('data_emissao').value;
+        const desconto_geral = document.getElementById('desconto').value || 0;
+        const forma_pagamento = document.getElementById('forma_pagamento').value;
+        const tipo_pagamento = document.getElementById('tipo_pagamento').value;
+        const numero_parcelas = document.getElementById('numero_parcelas').value || 1;
+        const observacoes = '';
+        // Coletar itens
+        const itens = [];
+        document.querySelectorAll('tr.produto-linha').forEach(function(tr) {
+            const qtde = parseInt(tr.querySelector('.qtde-input').value) || 0;
+            if (qtde > 0) {
+                itens.push({
+                    produto_id: tr.querySelector('.qtde-input').dataset.produtoId,
+                    quantidade: qtde,
+                    preco: tr.querySelector('.qtde-input').dataset.preco,
+                    desconto: parseFloat(tr.querySelector('.desconto-input').value) || 0,
+                    brinde: tr.querySelector('.brinde-input').value || '',
+                    troca: tr.querySelector('.troca-input').value || ''
+                });
+            }
+        });
+        if (!cliente_id || !vendedor_id || itens.length === 0) {
+            alert('Selecione cliente, vendedor e adicione pelo menos um item!');
+            return;
+        }
+        // Verifica se está em modo edição
+        {% if edicao and venda %}
+        // Cria um formulário oculto e submete via POST para a rota de edição
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/vendas/{{venda.id}}/editar';
+        form.style.display = 'none';
+        // Adiciona campos
+        function addField(name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        }
+        addField('cliente_id', cliente_id);
+        addField('vendedor_id', vendedor_id);
+        addField('data_emissao', data_emissao);
+        addField('desconto', desconto_geral);
+        addField('forma_pagamento', forma_pagamento);
+        addField('tipo_parcelamento', tipo_parcelamento);
+        addField('numero_parcelas', numero_parcelas);
+        addField('observacoes', observacoes);
+        // Adiciona itens (como JSON)
+        addField('itens_json', JSON.stringify(itens));
+        document.body.appendChild(form);
+        form.submit();
+        {% else %}
+        // Novo pedido: fetch para /vendas/gravar
+        const tipoPagamento = document.getElementById('tipo_pagamento').value;
+        
+        // Coletar dias de cada parcela
+        const diasParcelas = [];
+        if (tipoPagamento === 'A Prazo') {
+            document.querySelectorAll('.dias-parcela').forEach(select => {
+                diasParcelas.push(parseInt(select.value));
+            });
+        }
+        
+        fetch('/vendas/gravar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                cliente_id,
+                vendedor_id,
+                data_emissao,
+                desconto_geral,
+                forma_pagamento,
+                tipo_pagamento: tipoPagamento,
+                tipo_parcelamento: tipoPagamento === 'A Prazo' ? 'Personalizado' : 'A Vista',
+                numero_parcelas,
+                dias_parcelas: diasParcelas,
+                itens,
+                observacoes
+            })
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = data.redirect;
+            } else {
+                alert(data.message || 'Erro ao gravar venda!');
+            }
+        })
+        .catch(() => alert('Erro ao gravar venda!'));
+        {% endif %}
+    });
+});
+
+function toggleParcelamento() {
+    const tipoPagamento = document.getElementById('tipo_pagamento').value;
+    const divParcelas = document.getElementById('div_parcelas');
+    const divDiasParcelas = document.getElementById('div_dias_parcelas');
+    const divValorParcela = document.getElementById('div_valor_parcela');
+    
+    if (tipoPagamento === 'A Prazo') {
+        divParcelas.style.display = 'flex';
+        divDiasParcelas.style.display = 'flex';
+        divValorParcela.style.display = 'flex';
+        gerarCamposDiasParcelas();
+    } else {
+        divParcelas.style.display = 'none';
+        divDiasParcelas.style.display = 'none';
+        divValorParcela.style.display = 'none';
+    }
+}
+
+function gerarCamposDiasParcelas() {
+    const numeroParcelas = parseInt(document.getElementById('numero_parcelas').value) || 2;
+    const container = document.getElementById('container_dias_parcelas');
+    container.innerHTML = '';
+    
+    for (let i = 1; i <= numeroParcelas; i++) {
+        const div = document.createElement('div');
+        div.className = 'row mb-1';
+        div.innerHTML = `
+            <div class="col-6 text-end">Parcela ${i}:</div>
+            <div class="col-6">
+                <select class="form-select form-select-sm dias-parcela" data-parcela="${i}">
+                    <option value="30">30 dias</option>
+                    <option value="45">45 dias</option>
+                    <option value="60">60 dias</option>
+                    <option value="90">90 dias</option>
+                    <option value="15">15 dias</option>
+                    <option value="7">7 dias</option>
+                </select>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+}
+
+function calcularParcelas() {
+    const total = parseFloat(document.getElementById('total').textContent.replace('R$', '').replace(',', '.')) || 0;
+    const numeroParcelas = parseInt(document.getElementById('numero_parcelas').value) || 1;
+    const valorParcela = total / numeroParcelas;
+    document.getElementById('valor_parcela').textContent = `R$ ${valorParcela.toFixed(2)}`;
+}
+
+// Adicionar evento para regerar campos quando o número de parcelas mudar
+document.addEventListener('DOMContentLoaded', function() {
+    const numeroParcelasInput = document.getElementById('numero_parcelas');
+    if (numeroParcelasInput) {
+        numeroParcelasInput.addEventListener('change', gerarCamposDiasParcelas);
+        numeroParcelasInput.addEventListener('input', function() {
+            gerarCamposDiasParcelas();
+            calcularParcelas();
+        });
+    }
+});
+
+function atualizarSubtotal() {
+    let subtotal = 0;
+    document.querySelectorAll('.total-item').forEach(function(td) {
+        const valor = parseFloat(td.textContent.replace('R$', '').replace(',', '.')) || 0;
+        subtotal += valor;
+    });
+    document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
+    const desconto = parseFloat(document.getElementById('desconto').value) || 0;
+    const total = subtotal - desconto;
+    document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
+    
+    // Recalcular parcelas se necessário
+    if (document.getElementById('tipo_pagamento').value === 'A Prazo') {
+        calcularParcelas();
+    }
+}
+
+// Função para atualizar totais (deve existir no seu JS principal, mas garanto aqui)
+function atualizarTotaisVenda() {
+    let subtotal = 0;
+    let descontoGeral = parseFloat(document.getElementById('desconto').value || 0);
+    document.querySelectorAll('tr.produto-linha').forEach(function(tr) {
+        var qtde = parseFloat(tr.querySelector('.qtde-input')?.value || 0);
+        var preco = parseFloat(tr.querySelector('.qtde-input')?.getAttribute('data-preco') || 0);
+        var desconto = parseFloat(tr.querySelector('.desconto-input')?.value || 0);
+        if (qtde > 0) {
+            subtotal += (preco * qtde) - desconto;
+        }
+    });
+    document.getElementById('subtotal').textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
+    let total = subtotal - descontoGeral;
+    document.getElementById('total').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+}
+</script>
+{% endblock %} 

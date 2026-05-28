@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-money-bill-wave"></i> Receber Parcela
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="alert alert-light border">
+                        <h6><strong>Informações da Venda</strong></h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p>
+                                    <strong>Cliente:</strong><br>
+                                    {{ conta.cliente.nome }}
+                                </p>
+                                <p>
+                                    <strong>Vendedor:</strong><br>
+                                    {{ conta.vendedor.nome }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p>
+                                    <strong>Número da Venda:</strong><br>
+                                    {{ conta.venda.numero_venda }}
+                                </p>
+                                <p>
+                                    <strong>Parcela:</strong><br>
+                                    {{ conta.numero_parcela }}/{{ conta.venda.numero_parcelas }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="banco_id" class="form-label">
+                                <strong>Selecione o Banco para Depositar <span class="text-danger">*</span></strong>
+                            </label>
+                            <select class="form-select form-select-lg" id="banco_id" name="banco_id" required onchange="atualizarSaldo()">
+                                <option value="">-- Escolha um banco --</option>
+                                {% for banco in bancos %}
+                                    <option value="{{ banco.id }}" data-saldo="{{ banco.saldo }}">
+                                        {{ banco.nome }} - Agência: {{ banco.agencia }} - Conta: {{ banco.conta }} (Saldo: R$ {{ "%.2f"|format(banco.saldo) }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">O saldo será creditado no banco selecionado</small>
+                        </div>
+
+                        <div class="alert alert-info" id="saldo_alert" style="display: none;">
+                            <strong>Saldo do Banco Selecionado:</strong> R$ <span id="saldo_valor">0,00</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="valor_pago" class="form-label">
+                                <strong>Valor da Parcela</strong>
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">R$</span>
+                                <input type="text" class="form-control" id="valor_pago" name="valor_pago" 
+                                       value="{{ "%.2f"|format(conta.valor_parcela) }}" placeholder="0,00">
+                            </div>
+                            <small class="form-text text-muted">
+                                Valor original da parcela: R$ {{ "%.2f"|format(conta.valor_parcela) }}
+                            </small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p>
+                                    <strong>Data de Vencimento:</strong><br>
+                                    {{ conta.data_vencimento.strftime('%d/%m/%Y') }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p>
+                                    <strong>Status Atual:</strong><br>
+                                    <span class="badge bg-warning text-dark">{{ conta.status }}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-success">
+                            <strong>✓ Sucesso da Operação:</strong>
+                            <ul class="mb-0">
+                                <li>Este valor será <strong>creditado</strong> no saldo do banco</li>
+                                <li>A operação será registrada no histórico de movimentações</li>
+                                <li>A parcela será marcada como paga</li>
+                                <li>Você poderá gerar o recibo de pagamento</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('contas_receber') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success" id="btn_receber">
+                                <i class="fas fa-check-circle"></i> Confirmar Recebimento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function atualizarSaldo() {
+    const select = document.getElementById('banco_id');
+    const selectedOption = select.options[select.selectedIndex];
+    const saldoAlert = document.getElementById('saldo_alert');
+    const saldoValor = document.getElementById('saldo_valor');
+    
+    if (selectedOption.value) {
+        const saldo = parseFloat(selectedOption.dataset.saldo);
+        saldoValor.textContent = saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        saldoAlert.style.display = 'block';
+    } else {
+        saldoAlert.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

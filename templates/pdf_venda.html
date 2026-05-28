@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Venda {{ venda.numero_venda }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #222; }
+        .header { border-bottom: 2px solid #4CAF50; margin-bottom: 16px; padding-bottom: 8px; }
+        .header h1 { color: #388e3c; font-size: 1.6em; margin: 0; }
+        .header .empresa { font-size: 1.1em; color: #555; }
+        .dados { margin-bottom: 12px; }
+        .dados strong { color: #388e3c; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        th, td { border: 1px solid #bbb; padding: 4px 6px; text-align: left; }
+        th { background: #e8f5e9; color: #222; font-size: 1em; }
+        .total { font-weight: bold; color: #388e3c; }
+        .right { text-align: right; }
+        .center { text-align: center; }
+        .footer { border-top: 1px solid #bbb; margin-top: 16px; padding-top: 8px; font-size: 0.95em; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CENTERMEDH WEB SYSTEM</h1>
+        <div class="empresa">CNPJ: 00.000.000/0001-00 &nbsp;|&nbsp; www.centermedh.com.br</div>
+    </div>
+    <div class="dados">
+        <strong>Venda Nº:</strong> {{ venda.numero_venda }}<br>
+        <strong>Data:</strong> {{ venda.data_venda.strftime('%d/%m/%Y') }}<br>
+        <strong>Cliente:</strong> {{ cliente.nome }}<br>
+        <strong>CPF:</strong> {{ cliente.cpf }}<br>
+        <strong>Endereço:</strong> {{ cliente.endereco }}, {{ cliente.numero }} - {{ cliente.bairro }}<br>
+        <strong>Cidade/UF:</strong> {{ cliente.cidade }}/{{ cliente.estado }}<br>
+        <strong>Telefone:</strong> {{ cliente.telefone }}<br>
+        <strong>Vendedor:</strong> {{ vendedor.nome }}<br>
+        <strong>Forma Pagamento:</strong> {{ venda.forma_pagamento }}<br>
+        <strong>Parcelamento:</strong> {{ venda.tipo_parcelamento }}
+        {% if venda.tipo_parcelamento != 'A Vista' and venda.numero_parcelas > 1 %}
+            - {{ venda.numero_parcelas }}x de R$ {{ '%.2f'|format(venda.valor_parcela) }}
+        {% endif %}
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th class="center">Qtd</th>
+                <th class="right">Preço</th>
+                <th class="right">Desconto</th>
+                <th class="right">Total</th>
+                <th>Brinde</th>
+                <th>Troca</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td>{{ item.produto.nome }}</td>
+                <td class="center">{{ item.quantidade }}</td>
+                <td class="right">R$ {{ '%.2f'|format(item.preco_unitario) }}</td>
+                <td class="right">R$ {{ '%.2f'|format(item.desconto) }}</td>
+                <td class="right">R$ {{ '%.2f'|format(item.subtotal) }}</td>
+                <td>{{ item.brinde }}</td>
+                <td>{{ item.troca }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="footer">
+        <strong>Subtotal:</strong> R$ {{ '%.2f'|format(venda.subtotal) }}<br>
+        {% if venda.desconto > 0 %}
+        <strong>Desconto Geral:</strong> R$ {{ '%.2f'|format(venda.desconto) }}<br>
+        {% endif %}
+        <strong>Total:</strong> <span class="total">R$ {{ '%.2f'|format(venda.total) }}</span><br>
+        {% if venda.observacoes %}
+        <strong>Observações:</strong> {{ venda.observacoes }}<br>
+        {% endif %}
+    </div>
+</body>
+</html> 

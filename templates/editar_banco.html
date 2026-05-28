@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit"></i> Editar Banco
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">
+                                <strong>Nome da Conta <span class="text-danger">*</span></strong>
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" value="{{ banco.nome }}" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="numero_banco" class="form-label">
+                                        <strong>Número do Banco <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="numero_banco" name="numero_banco" value="{{ banco.numero_banco }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="agencia" class="form-label">
+                                        <strong>Agência <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="agencia" name="agencia" value="{{ banco.agencia }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="conta" class="form-label">
+                                        <strong>Conta <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" class="form-control" id="conta" name="conta" value="{{ banco.conta }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipo_conta" class="form-label">
+                                        <strong>Tipo de Conta</strong>
+                                    </label>
+                                    <select class="form-select" id="tipo_conta" name="tipo_conta">
+                                        <option value="Corrente" {% if banco.tipo_conta == 'Corrente' %}selected{% endif %}>Corrente</option>
+                                        <option value="Poupança" {% if banco.tipo_conta == 'Poupança' %}selected{% endif %}>Poupança</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="saldo" class="form-label">
+                                        <strong>Saldo</strong>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input type="text" class="form-control" id="saldo" name="saldo" value="{{ "%.2f"|format(banco.saldo) }}">
+                                    </div>
+                                    <small class="form-text text-muted">O saldo será atualizado automaticamente com as movimentações</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" {% if banco.ativo %}checked{% endif %}>
+                                <label class="form-check-label" for="ativo">
+                                    <strong>Conta Ativa</strong>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <small>
+                                <strong>Criado em:</strong> {{ banco.data_cadastro.strftime('%d/%m/%Y %H:%M') }}<br>
+                                <strong>Total de movimentações:</strong> {{ banco.movimentacoes|length }}
+                            </small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('bancos') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

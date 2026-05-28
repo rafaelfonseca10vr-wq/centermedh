@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Contas a Pagar - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-file-invoice-dollar me-2"></i>Contas a Pagar - Em Aberto
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('contas_pagar_pagas') }}" class="btn btn-outline-info">
+                    <i class="fas fa-check-circle me-1"></i>Ver Pagas
+                </a>
+                <a href="{{ url_for('novo_conta_pagar') }}" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i>Nova Conta
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Filtros</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-2">
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" name="fornecedor_id">
+                            <option value="">Todos os fornecedores</option>
+                            {% for fornecedor in fornecedores %}
+                            <option value="{{ fornecedor.id }}" {% if filtros.fornecedor_id|string == fornecedor.id|string %}selected{% endif %}>
+                                {{ fornecedor.razao_social }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm" name="numero_nota" placeholder="Número NF" value="{{ filtros.numero_nota }}">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" class="form-control form-control-sm" name="data_inicio" value="{{ filtros.data_inicio }}">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" class="form-control form-control-sm" name="data_fim" value="{{ filtros.data_fim }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-search me-1"></i>Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-0">Total do Período</h5>
+                    <small class="text-muted">Somatório das contas exibidas</small>
+                </div>
+                <div class="fs-4 text-primary">
+                    <strong>R$ {{ "{:,.2f}".format(total).replace(',', 'X').replace('.', ',').replace('X', '.') }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if contas %}
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-danger">
+                                <tr>
+                                    <th>Fornecedor</th>
+                                    <th>Nota Fiscal</th>
+                                    <th>Data Entrada</th>
+                                    <th>Vencimento</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conta in contas %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ conta.fornecedor.razao_social }}</strong>
+                                        <br><small class="text-muted">{{ conta.fornecedor.cnpj }}</small>
+                                    </td>
+                                    <td>{{ conta.numero_nota_fiscal }}</td>
+                                    <td>{{ conta.data_entrada.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <strong>{{ conta.data_vencimento.strftime('%d/%m/%Y') }}</strong>
+                                        {% if conta.data_vencimento < now %}
+                                        <br><span class="badge bg-danger">ATRASADO</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>R$ {{ ("%.2f"|format(conta.valor)).replace(".", ",") }}</strong></td>
+                                    <td>
+                                        {% if conta.status == 'Aberto' %}
+                                            <span class="badge bg-danger">Aberto</span>
+                                        {% elif conta.status == 'Pago' %}
+                                            <span class="badge bg-success">Pago</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ conta.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('baixar_conta_pagar', conta_id=conta.id) }}" class="btn btn-outline-success btn-sm" title="Baixar conta">
+                                                <i class="fas fa-money-bill-wave"></i> Baixar
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma conta em aberto</h5>
+                    <p class="text-muted">Todas as contas foram pagas ou não há contas cadastradas.</p>
+                    <a href="{{ url_for('novo_conta_pagar') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Cadastrar Nova Conta
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Scripts removidos - usar rotas diretas
+</script>
+
+}
+</script>
+{% endblock %}

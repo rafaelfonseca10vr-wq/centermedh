@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Gerenciar Usuários</h2>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-home me-1"></i>Menu
+        </a>
+    </div>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Administrador</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td>{{ u.nome_completo }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                {% if u.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.admin %}
+                                    <span class="badge bg-warning text-dark">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Não</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" class="d-inline">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    {% if u.ativo %}
+                                        <button name="acao" value="desativar" class="btn btn-outline-danger btn-sm" title="Desativar"><i class="fas fa-user-slash"></i></button>
+                                    {% else %}
+                                        <button name="acao" value="ativar" class="btn btn-outline-success btn-sm" title="Ativar"><i class="fas fa-user-check"></i></button>
+                                    {% endif %}
+                                </form>
+                                <form method="post" class="d-inline">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    {% if u.admin %}
+                                        <button name="acao" value="remover_admin" class="btn btn-outline-warning btn-sm" title="Remover Admin"><i class="fas fa-user-shield"></i> <i class="fas fa-times"></i></button>
+                                    {% else %}
+                                        <button name="acao" value="tornar_admin" class="btn btn-outline-warning btn-sm" title="Tornar Admin"><i class="fas fa-user-shield"></i></button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Vendas - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-shopping-cart me-2"></i>Vendas
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-1"></i>Menu
+                </a>
+                <a href="{{ url_for('nova_venda') }}" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i>Nova Venda
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros de Pesquisa -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-search me-2"></i>Filtros de Pesquisa</h6>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('vendas') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="data_inicio" class="form-label">Data Início</label>
+                            <input type="date" class="form-control" id="data_inicio" name="data_inicio" 
+                                   value="{{ filtros.data_inicio or '' }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="data_fim" class="form-label">Data Fim</label>
+                            <input type="date" class="form-control" id="data_fim" name="data_fim" 
+                                   value="{{ filtros.data_fim or '' }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="cliente_id" class="form-label">Cliente</label>
+                            <select class="form-select" id="cliente_id" name="cliente_id">
+                                <option value="">Todos os clientes</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}" {% if filtros.cliente_id|string == cliente.id|string %}selected{% endif %}>
+                                    {{ cliente.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="vendedor_id" class="form-label">Vendedor</label>
+                            <select class="form-select" id="vendedor_id" name="vendedor_id">
+                                <option value="">Todos os vendedores</option>
+                                {% for vendedor in vendedores %}
+                                <option value="{{ vendedor.id }}" {% if filtros.vendedor_id|string == vendedor.id|string %}selected{% endif %}>
+                                    {{ vendedor.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Pesquisar
+                            </button>
+                            <a href="{{ url_for('vendas') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Limpar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if vendas %}
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Número</th>
+                                    <th>Cliente</th>
+                                    <th>Vendedor</th>
+                                    <th>Data</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for venda in vendas %}
+                                <tr>
+                                    <td class="text-center">
+                                        {% if venda.excluido %}
+                                            <div class="status-indicator bg-warning" title="Venda Excluída"></div>
+                                        {% elif venda.impresso %}
+                                            <div class="status-indicator bg-success" title="Venda Impressa"></div>
+                                        {% else %}
+                                            <div class="status-indicator bg-danger" title="Venda Não Impressa"></div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ venda.numero_venda }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ venda.cliente.nome }}</strong>
+                                        <br><small class="text-muted">{{ venda.cliente.cpf }}</small>
+                                    </td>
+                                    <td>
+                                        {{ venda.vendedor.nome }}
+                                    </td>
+                                    <td>
+                                        {{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}
+                                    </td>
+                                    <td>
+                                        <strong>R$ {{ "%.2f"|format(venda.total) }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if venda.status == 'Pendente' %}
+                                            <span class="badge bg-warning">Pendente</span>
+                                        {% elif venda.status == 'Pago' %}
+                                            <span class="badge bg-success">Pago</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Cancelado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                    onclick="verVenda({{ venda.id }})" title="Ver Detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="/vendas/{{ venda.id }}/editar" class="btn btn-outline-warning btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="/vendas/{{ venda.id }}/pdf" class="btn btn-outline-success btn-sm" 
+                                               target="_blank" title="Imprimir PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            {% if not venda.excluido %}
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="excluirVenda({{ venda.id }})" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma venda encontrada</h5>
+                    <p class="text-muted">Tente ajustar os filtros de pesquisa.</p>
+                    <a href="{{ url_for('nova_venda') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Nova Venda
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 auto;
+}
+</style>
+
+<script>
+function verVenda(id) {
+    // Implementar visualização detalhada da venda
+    alert('Funcionalidade de visualização será implementada em breve!');
+}
+
+function editarVenda(id) {
+    // Implementar edição da venda
+    alert('Funcionalidade de edição será implementada em breve!');
+}
+
+function excluirVenda(id) {
+    if (confirm('Tem certeza que deseja excluir esta venda?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/vendas/${id}/excluir`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

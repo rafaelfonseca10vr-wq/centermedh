@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-university text-primary"></i> Bancos e Contas
+                </h1>
+                <a href="{{ url_for('novo_banco') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Novo Banco
+                </a>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row">
+                {% if bancos %}
+                    {% for banco in bancos %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card {% if not banco.ativo %}border-secondary{% endif %}">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    {{ banco.nome }}
+                                    {% if not banco.ativo %}
+                                        <span class="badge bg-secondary">Inativo</span>
+                                    {% endif %}
+                                </h5>
+                                <p class="card-text text-muted">
+                                    <small>
+                                        <strong>Banco:</strong> {{ banco.numero_banco }}<br>
+                                        <strong>Agência:</strong> {{ banco.agencia }}<br>
+                                        <strong>Conta:</strong> {{ banco.conta }}<br>
+                                        <strong>Tipo:</strong> {{ banco.tipo_conta }}
+                                    </small>
+                                </p>
+                                <div class="alert alert-info mb-0">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-wallet"></i> Saldo: <strong>R$ {{ "%.2f"|format(banco.saldo) }}</strong>
+                                    </h6>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="{{ url_for('editar_banco', banco_id=banco.id) }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                {% if banco.movimentacoes|length == 0 %}
+                                    <a href="{{ url_for('deletar_banco', banco_id=banco.id) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Tem certeza que deseja deletar?');">
+                                        <i class="fas fa-trash"></i> Deletar
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-danger btn-sm" disabled title="Não é possível deletar bancos com movimentações">
+                                        <i class="fas fa-trash"></i> Deletar
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Nenhum banco cadastrado. <a href="{{ url_for('novo_banco') }}">Cadastre um novo banco</a>.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}

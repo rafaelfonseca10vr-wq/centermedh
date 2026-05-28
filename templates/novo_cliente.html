@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Cliente - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Novo Cliente
+                </h4>
+                <p class="mb-0">Preencha os dados do cliente</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formCliente">
+                    <!-- Dados Pessoais -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="cpf_cnpj" class="form-label">
+                                <i class="fas fa-id-card me-1"></i>CPF/CNPJ
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" 
+                                       maxlength="18" placeholder="000.000.000-00 ou 00.000.000/0000-00">
+                                <button type="button" class="btn btn-outline-success" id="btnCnpj">
+                                    <i class="fas fa-search"></i> Buscar CNPJ
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="inscricao_estadual" class="form-label">
+                                <i class="fas fa-file-alt me-1"></i>Inscrição Estadual
+                            </label>
+                            <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" 
+                                   placeholder="Inscrição Estadual (opcional)">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="nome" class="form-label" id="label_nome">
+                                <i class="fas fa-user me-1"></i>Nome Completo *
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   required placeholder="Nome completo do cliente">
+                        </div>
+                        
+                        <div class="col-12 mb-3" id="campo_nome_fantasia" style="display: none;">
+                            <label for="nome_fantasia" class="form-label">
+                                <i class="fas fa-building me-1"></i>Nome Fantasia
+                            </label>
+                            <input type="text" class="form-control" id="nome_fantasia" name="nome_fantasia" 
+                                   placeholder="Nome fantasia (opcional)">
+                        </div>
+                    </div>
+                    
+                    <!-- Contato -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="email@exemplo.com">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="telefone" class="form-label">
+                                <i class="fas fa-phone me-1"></i>Telefone
+                            </label>
+                            <input type="text" class="form-control" id="telefone" name="telefone" 
+                                   maxlength="15" placeholder="(00) 00000-0000">
+                        </div>
+                    </div>
+                    
+                    <!-- Endereço -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="cep" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>CEP
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="cep" name="cep" 
+                                       maxlength="9" placeholder="00000-000">
+                                <button type="button" class="btn btn-outline-success" id="btnCep">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="endereco" class="form-label">
+                                <i class="fas fa-road me-1"></i>Endereço
+                            </label>
+                            <input type="text" class="form-control" id="endereco" name="endereco" 
+                                   placeholder="Rua, Avenida, etc.">
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label for="numero" class="form-label">
+                                <i class="fas fa-home me-1"></i>Número
+                            </label>
+                            <input type="text" class="form-control" id="numero" name="numero" 
+                                   placeholder="123">
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label for="bairro" class="form-label">
+                                <i class="fas fa-map me-1"></i>Bairro
+                            </label>
+                            <input type="text" class="form-control" id="bairro" name="bairro" 
+                                   placeholder="Centro">
+                        </div>
+                        
+                        <div class="col-8 mb-3">
+                            <label for="cidade" class="form-label">
+                                <i class="fas fa-city me-1"></i>Cidade
+                            </label>
+                            <input type="text" class="form-control" id="cidade" name="cidade" 
+                                   placeholder="Nome da cidade">
+                        </div>
+                        
+                        <div class="col-4 mb-3">
+                            <label for="estado" class="form-label">
+                                <i class="fas fa-flag me-1"></i>Estado
+                            </label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="">UF</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" checked>
+                                <label class="form-check-label" for="ativo">
+                                    <i class="fas fa-check-circle me-1"></i>Cliente Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('clientes') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Máscaras para os campos
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para CPF/CNPJ
+    const cpfCnpjInput = document.getElementById('cpf_cnpj');
+    cpfCnpjInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.length <= 11) {
+            // Máscara CPF
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            
+            // Mudar label para Nome Completo e esconder Nome Fantasia
+            document.getElementById('label_nome').innerHTML = '<i class="fas fa-user me-1"></i>Nome Completo *';
+            document.getElementById('campo_nome_fantasia').style.display = 'none';
+        } else {
+            // Máscara CNPJ
+            value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+            value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+            value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            
+            // Mudar label para Razão Social e mostrar Nome Fantasia
+            document.getElementById('label_nome').innerHTML = '<i class="fas fa-building me-1"></i>Razão Social *';
+            document.getElementById('campo_nome_fantasia').style.display = 'block';
+        }
+        
+        e.target.value = value;
+    });
+    
+    // Máscara para telefone
+    const telefoneInput = document.getElementById('telefone');
+    telefoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 11) {
+            if (value.length <= 10) {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            } else {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            e.target.value = value;
+        }
+    });
+    
+    // Máscara para CEP
+    const cepInput = document.getElementById('cep');
+    cepInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 8) {
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        }
+    });
+    
+    // Consulta de CEP
+    const btnCep = document.getElementById('btnCep');
+    btnCep.addEventListener('click', consultarCep);
+    
+    cepInput.addEventListener('blur', function() {
+        if (this.value.length === 9) {
+            consultarCep();
+        }
+    });
+    
+    // Consulta de CNPJ
+    const btnCnpj = document.getElementById('btnCnpj');
+    btnCnpj.addEventListener('click', consultarCnpj);
+});
+
+function consultarCep() {
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    const btnCep = document.getElementById('btnCep');
+    
+    if (cep.length !== 8) {
+        alert('CEP deve ter 8 dígitos');
+        return;
+    }
+    
+    btnCep.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+    btnCep.disabled = true;
+    
+    fetch(`/api/cep/${cep}`)
+        .then(response => response.json())
+        .then(data => {
+            btnCep.innerHTML = '<i class="fas fa-search"></i> Buscar';
+            btnCep.disabled = false;
+            
+            if (data.erro) {
+                alert('CEP não encontrado ou erro na consulta');
+                return;
+            }
+            
+            document.getElementById('endereco').value = data.endereco;
+            document.getElementById('bairro').value = data.bairro;
+            document.getElementById('cidade').value = data.cidade;
+            document.getElementById('estado').value = data.estado;
+            
+            // Foca no campo número após preencher o endereço
+            document.getElementById('numero').focus();
+        })
+        .catch(error => {
+            btnCep.innerHTML = '<i class="fas fa-search"></i> Buscar';
+            btnCep.disabled = false;
+            alert('Erro ao consultar CEP');
+        });
+}
+
+function consultarCnpj() {
+    const cnpj = document.getElementById('cpf_cnpj').value.replace(/\D/g, '');
+    const btnCnpj = document.getElementById('btnCnpj');
+    
+    if (cnpj.length !== 14) {
+        alert('CNPJ deve ter 14 dígitos');
+        return;
+    }
+    
+    btnCnpj.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+    btnCnpj.disabled = true;
+    
+    fetch(`/api/cnpj/${cnpj}`)
+        .then(response => response.json())
+        .then(data => {
+            btnCnpj.innerHTML = '<i class="fas fa-search"></i> Buscar CNPJ';
+            btnCnpj.disabled = false;
+            
+            if (data.erro) {
+                alert(data.erro);
+                return;
+            }
+            
+            // Preencher os campos com os dados do CNPJ
+            document.getElementById('nome').value = data.razao_social;
+            
+            // Tentar diferentes nomes para nome fantasia
+            const nomeFantasia = data.fantasia || data.nome_fantasia || '';
+            document.getElementById('nome_fantasia').value = nomeFantasia;
+            
+            // Tentar diferentes nomes para inscrição estadual
+            const inscricaoEstadual = data.ie || data.inscricao_estadual || '';
+            document.getElementById('inscricao_estadual').value = inscricaoEstadual;
+            
+            document.getElementById('email').value = data.email || '';
+            
+            // Formatar telefone
+            if (data.telefone) {
+                const telefone = data.telefone.replace(/\D/g, '');
+                if (telefone.length <= 10) {
+                    document.getElementById('telefone').value = telefone.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+                } else {
+                    document.getElementById('telefone').value = telefone.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
+                }
+            }
+            
+            // Preencher endereço
+            if (data.cep) {
+                document.getElementById('cep').value = data.cep.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            document.getElementById('endereco').value = data.endereco;
+            document.getElementById('numero').value = data.numero;
+            document.getElementById('bairro').value = data.bairro;
+            document.getElementById('cidade').value = data.cidade;
+            document.getElementById('estado').value = data.estado;
+            
+            alert('Dados do CNPJ preenchidos com sucesso!');
+        })
+        .catch(error => {
+            btnCnpj.innerHTML = '<i class="fas fa-search"></i> Buscar CNPJ';
+            btnCnpj.disabled = false;
+            alert('Erro ao consultar CNPJ');
+        });
+}
+</script>
+{% endblock %} 

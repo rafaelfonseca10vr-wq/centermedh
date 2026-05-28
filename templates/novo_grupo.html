@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Grupo - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>Novo Grupo de Produtos
+                </h4>
+                <p class="mb-0">Crie um novo grupo para organizar seus produtos</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formGrupo">
+                    <!-- Dados do Grupo -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="nome" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Nome do Grupo *
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   required placeholder="Ex: Coloração, Progressiva, Hidratação">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="descricao" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Descrição
+                            </label>
+                            <textarea class="form-control" id="descricao" name="descricao" 
+                                      rows="3" placeholder="Descreva o grupo de produtos..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" checked>
+                                <label class="form-check-label" for="ativo">
+                                    <i class="fas fa-check-circle me-1"></i>Grupo Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('grupos') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Exemplos de Grupos -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-1"></i>Exemplos de Grupos
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-1"></i>Coloração</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Progressiva</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Hidratação</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Shampoo</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-1"></i>Condicionador</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Máscara</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Finalizador</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Tratamento</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Produto - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Editar Produto
+                </h4>
+                <p class="mb-0">Atualize os dados do produto</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formProduto">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="codigo" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>Código do Produto *
+                            </label>
+                            <input type="text" class="form-control" id="codigo" name="codigo" 
+                                   required placeholder="Ex: COL001, PROG002" value="{{ produto.codigo }}">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="nome" class="form-label">
+                                <i class="fas fa-box me-1"></i>Nome do Produto *
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   required placeholder="Nome completo do produto" value="{{ produto.nome }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="grupo_id" class="form-label">
+                                <i class="fas fa-tags me-1"></i>Grupo do Produto *
+                            </label>
+                            <select class="form-select" id="grupo_id" name="grupo_id" required>
+                                <option value="">Selecione um grupo</option>
+                                {% for grupo in grupos %}
+                                <option value="{{ grupo.id }}" {% if produto.grupo_id == grupo.id %}selected{% endif %}>{{ grupo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="marca" class="form-label">
+                                <i class="fas fa-trademark me-1"></i>Marca
+                            </label>
+                            <input type="text" class="form-control" id="marca" name="marca" 
+                                   placeholder="Marca do produto" value="{{ produto.marca or '' }}">
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="ncm" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>NCM
+                            </label>
+                            <input type="text" class="form-control" id="ncm" name="ncm" 
+                                   placeholder="NCM do produto" value="{{ produto.ncm or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="descricao" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Descrição
+                            </label>
+                            <textarea class="form-control" id="descricao" name="descricao" 
+                                      rows="3" placeholder="Descrição detalhada do produto...">{{ produto.descricao or '' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="preco_custo" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Preço de Custo
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="text" class="form-control" id="preco_custo" name="preco_custo" 
+                                       placeholder="0,00" value="{{ produto.preco_custo or '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label for="preco_venda" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Preço de Venda *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="text" class="form-control" id="preco_venda" name="preco_venda" 
+                                       required placeholder="0,00" value="{{ produto.preco_venda or '' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="estoque" class="form-label">
+                                <i class="fas fa-boxes me-1"></i>Estoque Atual
+                            </label>
+                            <input type="number" class="form-control" id="estoque" name="estoque" 
+                                   min="0" value="{{ produto.estoque or 0 }}" placeholder="0">
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label for="estoque_minimo" class="form-label">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Estoque Mínimo
+                            </label>
+                            <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" 
+                                   min="0" value="{{ produto.estoque_minimo or 0 }}" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" {% if produto.ativo %}checked{% endif %}>
+                                <label class="form-check-label" for="ativo">
+                                    <i class="fas fa-check-circle me-1"></i>Produto Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('produtos') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-1"></i>Dicas para Produto
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-1"></i>Mantenha código único</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Use NCM correto</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Inclua custo e preço de venda</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-1"></i>Atualize estoque conforme entradas</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Escolha o grupo correto</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Verifique o custo se importar XML</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Máscaras para os campos
+document.addEventListener('DOMContentLoaded', function() {
+    const precoCusto = document.getElementById('preco_custo');
+    const precoVenda = document.getElementById('preco_venda');
+    
+    [precoCusto, precoVenda].forEach(input => {
+        if (!input) return;
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d.,]/g, '');
+            value = value.replace(',', '.');
+            if (value.includes('.')) {
+                let parts = value.split('.');
+                if (parts[1].length > 2) {
+                    parts[1] = parts[1].substring(0, 2);
+                }
+                value = parts.join('.');
+            }
+            e.target.value = value;
+        });
+    });
+});
+</script>
+{% endblock %}

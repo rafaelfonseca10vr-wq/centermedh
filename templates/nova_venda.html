@@ -1,0 +1,638 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Venda - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-shopping-cart me-2"></i>Nova Venda
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-1"></i>Menu
+                </a>
+                <a href="{{ url_for('vendas') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-list me-1"></i>Vendas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <!-- Informações da Venda -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informações da Venda
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="formVenda">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cliente_id" class="form-label">
+                                <i class="fas fa-user me-1"></i>Cliente *
+                            </label>
+                            <select class="form-select" id="cliente_id" name="cliente_id" required>
+                                <option value="">Selecione o cliente</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.nome }} - {{ cliente.cpf }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="vendedor_id" class="form-label">
+                                <i class="fas fa-user-tie me-1"></i>Vendedor *
+                            </label>
+                            <select class="form-select" id="vendedor_id" name="vendedor_id" required>
+                                <option value="">Selecione o vendedor</option>
+                                {% for vendedor in vendedores %}
+                                <option value="{{ vendedor.id }}">{{ vendedor.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="forma_pagamento" class="form-label">
+                                <i class="fas fa-credit-card me-1"></i>Forma de Pagamento
+                            </label>
+                            <select class="form-select" id="forma_pagamento" name="forma_pagamento">
+                                <option value="">Selecione</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="PIX">PIX</option>
+                                <option value="Transferência">Transferência</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="desconto_geral" class="form-label">
+                                <i class="fas fa-percent me-1"></i>Desconto Geral (R$)
+                            </label>
+                            <input type="number" class="form-control" id="desconto_geral" name="desconto_geral" 
+                                   step="0.01" min="0" value="0.00">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo_pagamento" class="form-label">
+                                <i class="fas fa-calendar-alt me-1"></i>Tipo de Pagamento
+                            </label>
+                            <select class="form-select" id="tipo_pagamento" name="tipo_pagamento" onchange="toggleParcelamento()">
+                                <option value="A Vista">À Vista</option>
+                                <option value="A Prazo">A Prazo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3" id="campo_desconto" style="display: none;">
+                            <label for="desconto_geral" class="form-label">
+                                <i class="fas fa-percent me-1"></i>Desconto Geral (R$)
+                            </label>
+                            <input type="number" class="form-control" id="desconto_geral" name="desconto_geral" 
+                                   step="0.01" min="0" value="0.00">
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="parcelamento-container" style="display: none;">
+                        <div class="col-md-4 mb-3">
+                            <label for="numero_parcelas" class="form-label">
+                                <i class="fas fa-list-ol me-1"></i>Número de Parcelas
+                            </label>
+                            <input type="number" class="form-control" id="numero_parcelas" name="numero_parcelas" 
+                                   min="1" value="1">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="dias_entre_parcelas" class="form-label">
+                                <i class="fas fa-clock me-1"></i>Dias Entre Parcelas
+                            </label>
+                            <select class="form-select" id="dias_entre_parcelas" name="dias_entre_parcelas">
+                                <option value="30">30 dias</option>
+                                <option value="45">45 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="15">15 dias</option>
+                                <option value="7">7 dias</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="valor_parcela" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Valor da Parcela
+                            </label>
+                            <input type="text" class="form-control" id="valor_parcela" name="valor_parcela" 
+                                   readonly style="background-color: #f8f9fa;">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="observacoes" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Observações
+                            </label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" 
+                                      rows="2" placeholder="Observações sobre a venda..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Grupos de Produtos em Grade -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tags me-2"></i>Grupos de Produtos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for grupo in grupos %}
+                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                        <div class="card grupo-card h-100" style="cursor: pointer;" 
+                             onclick="carregarProdutos({{ grupo.id }}, '{{ grupo.nome }}')">
+                            <div class="card-body text-center">
+                                <i class="fas fa-folder fa-2x text-success mb-2"></i>
+                                <h6 class="card-title">{{ grupo.nome }}</h6>
+                                <small class="text-muted">{{ grupo.produtos|length }} produtos</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Produtos do Grupo Selecionado -->
+        <div id="produtos-container" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>Produtos - <span id="grupo-nome"></span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary float-end" onclick="voltarGrupos()">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </button>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="produtos-lista" class="row">
+                        <!-- Produtos serão carregados aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carrinho -->
+        <div id="carrinho-container" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Itens Selecionados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="carrinho-lista">
+                        <!-- Itens do carrinho serão mostrados aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumo da Venda -->
+    <div class="col-12 col-lg-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calculator me-2"></i>Resumo da Venda
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Subtotal:</strong>
+                    </div>
+                    <div class="col-6 text-end">
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Desconto Geral:</strong>
+                    </div>
+                    <div class="col-6 text-end">
+                        <span id="desconto-valor">R$ 0,00</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <h5><strong>Total:</strong></h5>
+                    </div>
+                    <div class="col-6 text-end">
+                        <h5><strong id="total">R$ 0,00</strong></h5>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-success btn-lg" id="btnFinalizarVenda">
+                        <i class="fas fa-check me-1"></i>Finalizar Venda
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="btnLimparCarrinho">
+                        <i class="fas fa-trash me-1"></i>Limpar Carrinho
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.grupo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.produto-card {
+    transition: all 0.3s ease;
+}
+
+.produto-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.estoque-baixo {
+    color: #dc3545;
+}
+
+.estoque-normal {
+    color: #28a745;
+}
+</style>
+
+<script>
+let carrinho = [];
+let grupoAtual = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Desconto geral
+    document.getElementById('desconto_geral').addEventListener('input', function() {
+        atualizarResumo();
+        calcularValorParcela();
+    });
+    
+    // Finalizar venda
+    document.getElementById('btnFinalizarVenda').addEventListener('click', finalizarVenda);
+    
+    // Limpar carrinho
+    document.getElementById('btnLimparCarrinho').addEventListener('click', limparCarrinho);
+    
+    // Eventos para parcelamento
+    document.getElementById('numero_parcelas').addEventListener('input', calcularValorParcela);
+    document.getElementById('dias_entre_parcelas').addEventListener('change', calcularValorParcela);
+});
+
+function toggleParcelamento() {
+    const tipoPagamento = document.getElementById('tipo_pagamento').value;
+    const parcelamentoContainer = document.getElementById('parcelamento-container');
+    
+    if (tipoPagamento === 'A Prazo') {
+        parcelamentoContainer.style.display = 'block';
+    } else {
+        parcelamentoContainer.style.display = 'none';
+    }
+}
+
+function calcularValorParcela() {
+    const tipoPagamento = document.getElementById('tipo_pagamento').value;
+    
+    if (tipoPagamento !== 'A Prazo') {
+        return;
+    }
+    
+    const subtotal = carrinho.reduce((total, item) => total + item.subtotal, 0);
+    const descontoGeral = parseFloat(document.getElementById('desconto_geral').value) || 0;
+    const total = subtotal - descontoGeral;
+    const numeroParcelas = parseInt(document.getElementById('numero_parcelas').value) || 1;
+    
+    if (numeroParcelas > 0 && total > 0) {
+        const valorParcela = total / numeroParcelas;
+        document.getElementById('valor_parcela').value = `R$ ${valorParcela.toFixed(2)}`;
+    } else {
+        document.getElementById('valor_parcela').value = '';
+    }
+}
+
+function carregarProdutos(grupoId, grupoNome) {
+    grupoAtual = grupoId;
+    document.getElementById('grupo-nome').textContent = grupoNome;
+    
+    fetch(`/api/produtos/grupo/${grupoId}`)
+        .then(response => response.json())
+        .then(produtos => {
+            const container = document.getElementById('produtos-lista');
+            container.innerHTML = '';
+            
+            produtos.forEach(produto => {
+                const estoqueClass = produto.estoque <= 0 ? 'estoque-baixo' : 'estoque-normal';
+                const estoqueText = produto.estoque <= 0 ? 'Sem estoque' : `${produto.estoque} unidades`;
+                
+                const produtoHtml = `
+                    <div class="col-12 col-md-6 col-lg-4 mb-3">
+                        <div class="card produto-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">${produto.nome}</h6>
+                                <p class="card-text">
+                                    <small class="text-muted">Código: ${produto.codigo}</small><br>
+                                    ${produto.marca ? `<small class="text-muted">Marca: ${produto.marca}</small><br>` : ''}
+                                    <strong class="text-success">R$ ${produto.preco_venda.toFixed(2)}</strong><br>
+                                    <span class="${estoqueClass}">
+                                        <i class="fas fa-boxes me-1"></i>${estoqueText}
+                                    </span>
+                                </p>
+                                
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        <label class="form-label small">Qtd</label>
+                                        <input type="number" class="form-control form-control-sm" 
+                                               min="1" max="${produto.estoque}" value="1" 
+                                               data-produto-id="${produto.id}"
+                                               data-preco="${produto.preco_venda}"
+                                               data-nome="${produto.nome}"
+                                               data-codigo="${produto.codigo}"
+                                               data-estoque="${produto.estoque}"
+                                               ${produto.estoque <= 0 ? 'disabled' : ''}>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label small">Desc. (%)</label>
+                                        <input type="number" class="form-control form-control-sm desconto-item" 
+                                               min="0" max="100" value="0" step="0.1"
+                                               data-produto-id="${produto.id}">
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label small">Total</label>
+                                        <div class="form-control form-control-sm text-end" 
+                                             style="background-color: #f8f9fa; font-weight: bold;">
+                                            R$ ${produto.preco_venda.toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-success btn-sm w-100 btn-add-item"
+                                            ${produto.estoque <= 0 ? 'disabled' : ''}>
+                                        <i class="fas fa-plus me-1"></i>Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += produtoHtml;
+            });
+            
+            document.getElementById('produtos-container').style.display = 'block';
+            
+            // Adicionar eventos aos campos
+            adicionarEventosProdutos();
+        });
+}
+
+function adicionarEventosProdutos() {
+    // Eventos para quantidade e desconto
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+            const produtoId = this.dataset.produtoId;
+            const preco = parseFloat(this.dataset.preco);
+            const quantidade = parseInt(this.value) || 0;
+            const descontoPercentual = parseFloat(this.parentElement.nextElementSibling.querySelector('.desconto-item').value) || 0;
+            
+            const descontoValor = (preco * quantidade * descontoPercentual) / 100;
+            const total = (preco * quantidade) - descontoValor;
+            
+            // Atualizar total do item
+            const totalElement = this.parentElement.nextElementSibling.nextElementSibling.querySelector('.form-control');
+            totalElement.textContent = `R$ ${total.toFixed(2)}`;
+        });
+    });
+    
+    // Eventos para desconto
+    document.querySelectorAll('.desconto-item').forEach(input => {
+        input.addEventListener('input', function() {
+            const produtoId = this.dataset.produtoId;
+            const preco = parseFloat(this.parentElement.previousElementSibling.querySelector('input').dataset.preco);
+            const quantidade = parseInt(this.parentElement.previousElementSibling.querySelector('input').value) || 0;
+            const descontoPercentual = parseFloat(this.value) || 0;
+            
+            const descontoValor = (preco * quantidade * descontoPercentual) / 100;
+            const total = (preco * quantidade) - descontoValor;
+            
+            // Atualizar total do item
+            const totalElement = this.parentElement.nextElementSibling.querySelector('.form-control');
+            totalElement.textContent = `R$ ${total.toFixed(2)}`;
+        });
+    });
+    
+    // Eventos para botões adicionar
+    document.querySelectorAll('.btn-add-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const card = this.closest('.card');
+            const quantidadeInput = card.querySelector('input[type="number"]:not(.desconto-item)');
+            const descontoInput = card.querySelector('.desconto-item');
+            
+            const produtoId = quantidadeInput.dataset.produtoId;
+            const nome = quantidadeInput.dataset.nome;
+            const codigo = quantidadeInput.dataset.codigo;
+            const preco = parseFloat(quantidadeInput.dataset.preco);
+            const quantidade = parseInt(quantidadeInput.value) || 0;
+            const descontoPercentual = parseFloat(descontoInput.value) || 0;
+            
+            if (quantidade <= 0) {
+                alert('Quantidade deve ser maior que zero!');
+                return;
+            }
+            
+            const descontoValor = (preco * quantidade * descontoPercentual) / 100;
+            const subtotal = (preco * quantidade) - descontoValor;
+            
+            adicionarAoCarrinho(produtoId, nome, codigo, preco, quantidade, descontoPercentual, subtotal);
+            
+            // Limpar campos
+            quantidadeInput.value = 1;
+            descontoInput.value = 0;
+            card.querySelector('.form-control.text-end').textContent = `R$ ${preco.toFixed(2)}`;
+        });
+    });
+}
+
+function adicionarAoCarrinho(produtoId, nome, codigo, preco, quantidade, descontoPercentual, subtotal) {
+    const itemExistente = carrinho.find(item => item.produtoId === produtoId);
+    
+    if (itemExistente) {
+        itemExistente.quantidade += quantidade;
+        itemExistente.descontoPercentual = descontoPercentual;
+        itemExistente.subtotal = subtotal * (itemExistente.quantidade / quantidade);
+    } else {
+        carrinho.push({
+            produtoId: produtoId,
+            nome: nome,
+            codigo: codigo,
+            preco: preco,
+            quantidade: quantidade,
+            descontoPercentual: descontoPercentual,
+            subtotal: subtotal
+        });
+    }
+    
+    atualizarCarrinho();
+    atualizarResumo();
+}
+
+function atualizarCarrinho() {
+    const container = document.getElementById('carrinho-lista');
+    container.innerHTML = '';
+    
+    carrinho.forEach((item, index) => {
+        const descontoValor = (item.preco * item.quantidade * item.descontoPercentual) / 100;
+        const itemHtml = `
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h6 class="mb-1">${item.nome}</h6>
+                            <small class="text-muted">${item.codigo}</small>
+                            <br><small>Qtd: ${item.quantidade} x R$ ${item.preco.toFixed(2)}</small>
+                            ${item.descontoPercentual > 0 ? `<br><small class="text-danger">Desc: ${item.descontoPercentual}% (-R$ ${descontoValor.toFixed(2)})</small>` : ''}
+                        </div>
+                        <div class="col-3 text-end">
+                            <strong>R$ ${item.subtotal.toFixed(2)}</strong>
+                        </div>
+                        <div class="col-1">
+                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                    onclick="removerDoCarrinho(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += itemHtml;
+    });
+    
+    document.getElementById('carrinho-container').style.display = carrinho.length > 0 ? 'block' : 'none';
+}
+
+function removerDoCarrinho(index) {
+    carrinho.splice(index, 1);
+    atualizarCarrinho();
+    atualizarResumo();
+}
+
+function atualizarResumo() {
+    const subtotal = carrinho.reduce((total, item) => total + item.subtotal, 0);
+    const descontoGeral = parseFloat(document.getElementById('desconto_geral').value) || 0;
+    const total = subtotal - descontoGeral;
+    
+    document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
+    document.getElementById('desconto-valor').textContent = `R$ ${descontoGeral.toFixed(2)}`;
+    document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
+}
+
+function voltarGrupos() {
+    document.getElementById('produtos-container').style.display = 'none';
+    grupoAtual = null;
+}
+
+function limparCarrinho() {
+    carrinho = [];
+    atualizarCarrinho();
+    atualizarResumo();
+}
+
+function finalizarVenda() {
+    const clienteId = document.getElementById('cliente_id').value;
+    const vendedorId = document.getElementById('vendedor_id').value;
+    
+    if (!clienteId) {
+        alert('Selecione um cliente!');
+        return;
+    }
+    
+    if (!vendedorId) {
+        alert('Selecione um vendedor!');
+        return;
+    }
+    
+    if (carrinho.length === 0) {
+        alert('Adicione produtos ao carrinho!');
+        return;
+    }
+    
+    const tipoPagamento = document.getElementById('tipo_pagamento').value;
+    const diasEntreParcelas = document.getElementById('dias_entre_parcelas').value;
+    const numeroParcelas = document.getElementById('numero_parcelas').value;
+    
+    if (tipoPagamento === 'A Prazo' && numeroParcelas < 2) {
+        alert('Para venda a prazo, informe pelo menos 2 parcelas!');
+        return;
+    }
+    
+    // Preparar dados para envio
+    const data = {
+        cliente_id: clienteId,
+        vendedor_id: vendedorId,
+        data_emissao: new Date().toISOString().split('T')[0],
+        itens: carrinho.map(item => ({
+            produto_id: item.produtoId,
+            quantidade: item.quantidade,
+            preco: item.preco,
+            desconto: (item.preco * item.quantidade * item.descontoPercentual) / 100
+        })),
+        observacoes: document.getElementById('observacoes').value,
+        forma_pagamento: document.getElementById('forma_pagamento').value,
+        tipo_pagamento: tipoPagamento,
+        tipo_parcelamento: tipoPagamento === 'A Prazo' ? 'Personalizado' : 'A Vista',
+        numero_parcelas: numeroParcelas,
+        dias_entre_parcelas: diasEntreParcelas,
+        desconto_geral: parseFloat(document.getElementById('desconto_geral').value) || 0
+    };
+    
+    // Enviar venda para o servidor
+    fetch('/vendas/gravar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message);
+            window.location.href = result.redirect;
+        } else {
+            alert(result.message);
+        }
+    })
+    .catch(error => {
+        alert('Erro ao gravar venda: ' + error);
+    });
+}
+</script>
+{% endblock %} 

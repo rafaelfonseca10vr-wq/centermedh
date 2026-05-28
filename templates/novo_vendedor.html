@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Vendedor - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-tie me-2"></i>Novo Vendedor
+                </h4>
+                <p class="mb-0">Cadastre um novo vendedor no sistema</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formVendedor">
+                    <!-- Dados Pessoais -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="nome" class="form-label">
+                                <i class="fas fa-user me-1"></i>Nome Completo *
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   required placeholder="Nome completo do vendedor">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="cpf" class="form-label">
+                                <i class="fas fa-id-card me-1"></i>CPF *
+                            </label>
+                            <input type="text" class="form-control" id="cpf" name="cpf" 
+                                   maxlength="14" required placeholder="000.000.000-00">
+                        </div>
+                    </div>
+                    
+                    <!-- Contato -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="email@exemplo.com">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="telefone" class="form-label">
+                                <i class="fas fa-phone me-1"></i>Telefone
+                            </label>
+                            <input type="text" class="form-control" id="telefone" name="telefone" 
+                                   maxlength="15" placeholder="(00) 00000-0000">
+                        </div>
+                    </div>
+                    
+                    <!-- Comissão -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="comissao" class="form-label">
+                                <i class="fas fa-percentage me-1"></i>Comissão (%)
+                            </label>
+                            <input type="number" class="form-control" id="comissao" name="comissao" 
+                                   step="0.1" min="0" max="100" placeholder="0.0">
+                            <div class="form-text">Percentual de comissão sobre as vendas</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" checked>
+                                <label class="form-check-label" for="ativo">
+                                    <i class="fas fa-check-circle me-1"></i>Vendedor Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('vendedores') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Máscaras para os campos
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para CPF
+    const cpfInput = document.getElementById('cpf');
+    cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 11) {
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        }
+    });
+    
+    // Máscara para telefone
+    const telefoneInput = document.getElementById('telefone');
+    telefoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 11) {
+            if (value.length <= 10) {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            } else {
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            e.target.value = value;
+        }
+    });
+});
+</script>
+{% endblock %} 

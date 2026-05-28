@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Conta a Pagar - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Nova Conta a Pagar
+                </h4>
+                <p class="mb-0">Registre uma nova conta a pagar</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formContaPagar">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="fornecedor_id" class="form-label">
+                                <i class="fas fa-truck me-1"></i>Fornecedor *
+                            </label>
+                            <select class="form-select" id="fornecedor_id" name="fornecedor_id" required>
+                                <option value="">Selecione o fornecedor</option>
+                                {% for fornecedor in fornecedores %}
+                                <option value="{{ fornecedor.id }}">{{ fornecedor.razao_social }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="numero_nota_fiscal" class="form-label">
+                                <i class="fas fa-receipt me-1"></i>Número da Nota Fiscal *
+                            </label>
+                            <input type="text" class="form-control" id="numero_nota_fiscal" name="numero_nota_fiscal" required placeholder="Ex: NF-001234">
+                        </div>
+
+                        <div class="col-6 mb-3">
+                            <label for="data_entrada" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>Data de Entrada *
+                            </label>
+                            <input type="date" class="form-control" id="data_entrada" name="data_entrada" required>
+                        </div>
+
+                        <div class="col-6 mb-3">
+                            <label for="data_vencimento" class="form-label">
+                                <i class="fas fa-calendar-check me-1"></i>Data de Vencimento *
+                            </label>
+                            <input type="date" class="form-control" id="data_vencimento" name="data_vencimento" required>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="valor" class="form-label">
+                                <i class="fas fa-money-bill me-1"></i>Valor *
+                            </label>
+                            <input type="text" class="form-control" id="valor" name="valor" required placeholder="0.00" autocomplete="off">
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="observacoes" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Observações
+                            </label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3" placeholder="Adicione observações (opcional)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('contas_pagar') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dataEntradaInput = document.getElementById('data_entrada');
+    const valorInput = document.getElementById('valor');
+
+    // Definir data de entrada como hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    dataEntradaInput.value = hoje;
+
+    // Permitir digitação de valor com vírgula ou ponto
+    valorInput.addEventListener('keypress', function(e) {
+        const char = e.key;
+        const value = this.value;
+        
+        // Permitir números, vírgula e ponto
+        if (!/[\d,.]/.test(char) && e.key !== 'Backspace' && e.key !== 'Delete') {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

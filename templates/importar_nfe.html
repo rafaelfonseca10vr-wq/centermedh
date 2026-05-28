@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar NFe{% endblock %}
+
+{% block content %}
+<h1>Importar NFe XML</h1>
+<p>Selecione o arquivo XML da nota fiscal eletrônica para atualizar o estoque, criar fornecedor/produto e gerar conta a pagar.</p>
+<form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="arquivo">Arquivo XML</label>
+        <input type="file" id="arquivo" name="arquivo" class="form-control" accept=".xml" required>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Importar</button>
+</form>
+{% endblock %}

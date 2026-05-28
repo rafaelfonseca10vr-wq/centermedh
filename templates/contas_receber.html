@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Contas a Receber - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-money-bill-wave me-2"></i>Contas a Receber
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-1"></i>Menu
+                </a>
+                <a href="{{ url_for('vendas') }}" class="btn btn-outline-success">
+                    <i class="fas fa-shopping-cart me-1"></i>Vendas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros de Pesquisa -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-search me-2"></i>Filtros de Pesquisa</h6>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('contas_receber') }}">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="cliente_id" class="form-label">Cliente</label>
+                            <select class="form-select" id="cliente_id" name="cliente_id">
+                                <option value="">Todos os clientes</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}" {% if filtros.cliente_id|string == cliente.id|string %}selected{% endif %}>
+                                    {{ cliente.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="vendedor_id" class="form-label">Vendedor</label>
+                            <select class="form-select" id="vendedor_id" name="vendedor_id">
+                                <option value="">Todos os vendedores</option>
+                                {% for vendedor in vendedores %}
+                                <option value="{{ vendedor.id }}" {% if filtros.vendedor_id|string == vendedor.id|string %}selected{% endif %}>
+                                    {{ vendedor.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Todos os status</option>
+                                <option value="Pendente" {% if filtros.status == 'Pendente' %}selected{% endif %}>Pendente</option>
+                                <option value="Pago" {% if filtros.status == 'Pago' %}selected{% endif %}>Pago</option>
+                                <option value="Atrasado" {% if filtros.status == 'Atrasado' %}selected{% endif %}>Atrasado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Pesquisar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <a href="{{ url_for('contas_receber') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Limpar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if contas %}
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Venda</th>
+                                    <th>Cliente</th>
+                                    <th>Vendedor</th>
+                                    <th>Parcela</th>
+                                    <th>Vencimento</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conta in contas %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ conta.venda.numero_venda }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ conta.cliente.nome }}</strong>
+                                        <br><small class="text-muted">{{ conta.cliente.cpf }}</small>
+                                    </td>
+                                    <td>
+                                        {{ conta.vendedor.nome }}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">{{ conta.numero_parcela }}/{{ conta.venda.numero_parcelas }}</span>
+                                    </td>
+                                    <td>
+                                        {{ conta.data_vencimento.strftime('%d/%m/%Y') }}
+                                        {% if conta.data_vencimento.date() < hoje and conta.status == 'Pendente' %}
+                                            <br><small class="text-danger">Vencida</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>R$ {{ "%.2f"|format(conta.valor_parcela) }}</strong>
+                                        {% if conta.valor_pago > 0 %}
+                                            <br><small class="text-success">Pago: R$ {{ "%.2f"|format(conta.valor_pago) }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if conta.status == 'Pendente' %}
+                                            {% if conta.data_vencimento.date() < hoje %}
+                                                <span class="badge bg-danger">Atrasado</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Pendente</span>
+                                            {% endif %}
+                                        {% elif conta.status == 'Pago' %}
+                                            <span class="badge bg-success">Pago</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ conta.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if conta.status != 'Pago' %}
+                                        <a href="{{ url_for('baixar_conta_receber', conta_id=conta.id) }}" 
+                                           class="btn btn-outline-success btn-sm" 
+                                           title="Receber parcela">
+                                            <i class="fas fa-money-bill-wave"></i> Receber
+                                        </a>
+                                        {% else %}
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="/contas-receber/{{ conta.id }}/recibo" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               target="_blank" 
+                                               title="Visualizar Recibo">
+                                                <i class="fas fa-file-text"></i> Recibo
+                                            </a>
+                                            <button type="button" class="btn btn-outline-info btn-sm" 
+                                                    onclick="imprimirBluetooth({{ conta.id }})" 
+                                                    title="Imprimir via Bluetooth">
+                                                <i class="fas fa-print"></i> Imprimir
+                                            </button>
+                                        </div>
+                                        <br><small class="text-muted">Pago em {{ conta.data_pagamento.strftime('%d/%m/%Y') }}</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma conta a receber encontrada</h5>
+                    <p class="text-muted">Tente ajustar os filtros de pesquisa.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para Pagamento -->
+<div class="modal fade" id="modalPagamento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Pagamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formPagamento" method="POST">
+                    <div class="mb-3">
+                        <label for="valor_pago" class="form-label">Valor Pago</label>
+                        <input type="number" step="0.01" class="form-control" id="valor_pago" name="valor_pago" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formPagamento" class="btn btn-success">
+                    <i class="fas fa-check me-1"></i>Confirmar Pagamento
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="btnAbrirRecibo" style="display:none;" onclick="mostrarReciboUltimaBaixa()">
+                    <i class="fas fa-file-text"></i> Recibo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Recibo -->
+<div class="modal fade" id="modalRecibo" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Recibo de Pagamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="reciboTexto" style="font-family:monospace; font-size:1rem;"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary" onclick="imprimirReciboTexto()"><i class="fas fa-print"></i> Imprimir</button>
+        <button type="button" class="btn btn-outline-success" onclick="baixarReciboTexto()"><i class="fas fa-download"></i> Baixar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function imprimirBluetooth(contaId) {
+    if (confirm('Deseja imprimir o recibo na impressora Bluetooth?')) {
+        fetch(`/contas-receber/${contaId}/imprimir-bluetooth`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Recibo enviado para impressora com sucesso!');
+                } else {
+                    alert('Erro ao imprimir: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Erro ao conectar com a impressora: ' + error);
+            });
+    }
+}
+
+function mostrarRecibo(contaId) {
+    fetch(`/contas-receber/${contaId}/recibo`)
+        .then(response => response.text())
+        .then(texto => {
+            document.getElementById('reciboTexto').textContent = texto;
+            new bootstrap.Modal(document.getElementById('modalRecibo')).show();
+        });
+}
+
+function imprimirReciboTexto() {
+    var texto = document.getElementById('reciboTexto').textContent;
+    var win = window.open('', '', 'width=600,height=600');
+    win.document.write('<pre style="font-family:monospace; font-size:1rem;">' + texto + '</pre>');
+    win.print();
+    win.close();
+}
+
+function baixarReciboTexto() {
+    var texto = document.getElementById('reciboTexto').textContent;
+    var blob = new Blob([texto], {type: 'text/plain'});
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'recibo.txt';
+    link.click();
+}
+
+// Verificar se há mensagem de sucesso e destacar os botões de recibo
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se há mensagem de sucesso
+    const alerts = document.querySelectorAll('.alert-success');
+    if (alerts.length > 0) {
+        // Destacar botões de recibo para parcelas pagas
+        const reciboButtons = document.querySelectorAll('.btn-outline-primary');
+        reciboButtons.forEach(button => {
+            button.style.animation = 'pulse 2s';
+        });
+    }
+});
+
+// Adicionar CSS para animação
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+`;
+document.head.appendChild(style);
+
+let ultimaContaBaixada = null;
+
+// Sobrescrever o submit do formulário para capturar o ID da conta
+const formPagamento = document.getElementById('formPagamento');
+if (formPagamento) {
+    formPagamento.addEventListener('submit', function(e) {
+        const action = formPagamento.action;
+        const match = action.match(/\/contas-receber\/(\d+)\/pagar/);
+        if (match) {
+            ultimaContaBaixada = match[1];
+        }
+        // Exibir botão de recibo após submit
+        setTimeout(() => {
+            document.getElementById('btnAbrirRecibo').style.display = 'inline-block';
+        }, 1000);
+    });
+}
+
+function mostrarReciboUltimaBaixa() {
+    if (ultimaContaBaixada) {
+        mostrarRecibo(ultimaContaBaixada);
+    }
+}
+</script>
+{% endblock %} 

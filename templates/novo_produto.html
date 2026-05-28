@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Produto - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-box me-2"></i>Novo Produto
+                </h4>
+                <p class="mb-0">Cadastre um novo produto no sistema</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formProduto">
+                    <!-- Dados Básicos -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="codigo" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>Código do Produto *
+                            </label>
+                            <input type="text" class="form-control" id="codigo" name="codigo" 
+                                   required placeholder="Ex: COL001, PROG002">
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="nome" class="form-label">
+                                <i class="fas fa-box me-1"></i>Nome do Produto *
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   required placeholder="Nome completo do produto">
+                        </div>
+                    </div>
+                    
+                    <!-- Grupo e Marca -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="grupo_id" class="form-label">
+                                <i class="fas fa-tags me-1"></i>Grupo do Produto *
+                            </label>
+                            <select class="form-select" id="grupo_id" name="grupo_id" required>
+                                <option value="">Selecione um grupo</option>
+                                {% for grupo in grupos %}
+                                <option value="{{ grupo.id }}">{{ grupo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="marca" class="form-label">
+                                <i class="fas fa-trademark me-1"></i>Marca
+                            </label>
+                            <input type="text" class="form-control" id="marca" name="marca" 
+                                   placeholder="Marca do produto">
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="ncm" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>NCM
+                            </label>
+                            <input type="text" class="form-control" id="ncm" name="ncm" 
+                                   placeholder="NCM do produto">
+                        </div>
+                    </div>
+                    
+                    <!-- Descrição -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="descricao" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Descrição
+                            </label>
+                            <textarea class="form-control" id="descricao" name="descricao" 
+                                      rows="3" placeholder="Descrição detalhada do produto..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Preços -->
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="preco_custo" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Preço de Custo
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="preco_custo" name="preco_custo" 
+                                       step="0.01" min="0" placeholder="0,00">
+                            </div>
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label for="preco_venda" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Preço de Venda *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="preco_venda" name="preco_venda" 
+                                       step="0.01" min="0" required placeholder="0,00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estoque -->
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="estoque" class="form-label">
+                                <i class="fas fa-boxes me-1"></i>Estoque Atual
+                            </label>
+                            <input type="number" class="form-control" id="estoque" name="estoque" 
+                                   min="0" value="0" placeholder="0">
+                        </div>
+                        
+                        <div class="col-6 mb-3">
+                            <label for="estoque_minimo" class="form-label">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Estoque Mínimo
+                            </label>
+                            <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" 
+                                   min="0" value="0" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" checked>
+                                <label class="form-check-label" for="ativo">
+                                    <i class="fas fa-check-circle me-1"></i>Produto Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('produtos') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Dicas -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-1"></i>Dicas para Cadastro
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-1"></i>Use códigos únicos</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Descreva bem o produto</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Defina preços corretos</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-1"></i>Controle o estoque</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Defina estoque mínimo</li>
+                            <li><i class="fas fa-circle text-success me-1"></i>Organize por grupos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Máscaras para os campos
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para preços
+    const precoCusto = document.getElementById('preco_custo');
+    const precoVenda = document.getElementById('preco_venda');
+    
+    [precoCusto, precoVenda].forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d.,]/g, '');
+            value = value.replace(',', '.');
+            if (value.includes('.')) {
+                let parts = value.split('.');
+                if (parts[1].length > 2) {
+                    parts[1] = parts[1].substring(0, 2);
+                }
+                value = parts.join('.');
+            }
+            e.target.value = value;
+        });
+    });
+    
+    // Validação de preço de venda
+    precoVenda.addEventListener('blur', function() {
+        const custo = parseFloat(precoCusto.value) || 0;
+        const venda = parseFloat(this.value) || 0;
+        
+        if (venda < custo) {
+            alert('Preço de venda não pode ser menor que o preço de custo!');
+            this.focus();
+        }
+    });
+});
+</script>
+{% endblock %} 
