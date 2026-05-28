@@ -16,6 +16,9 @@
                 <a href="{{ url_for('vendas') }}" class="btn btn-outline-success">
                     <i class="fas fa-shopping-cart me-1"></i>Vendas
                 </a>
+                <a href="{{ url_for('nova_conta_receber_avulsa') }}" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i>Conta Avulsa
+                </a>
             </div>
         </div>
     </div>
@@ -107,17 +110,29 @@
                                 {% for conta in contas %}
                                 <tr>
                                     <td>
-                                        <strong>{{ conta.venda.numero_venda }}</strong>
+                                        {% if conta.venda %}
+                                            <strong>{{ conta.venda.numero_venda }}</strong>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Avulsa</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <strong>{{ conta.cliente.nome }}</strong>
                                         <br><small class="text-muted">{{ conta.cliente.cpf }}</small>
                                     </td>
                                     <td>
-                                        {{ conta.vendedor.nome }}
+                                        {% if conta.vendedor %}
+                                            {{ conta.vendedor.nome }}
+                                        {% else %}
+                                            <small class="text-muted">—</small>
+                                        {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-info">{{ conta.numero_parcela }}/{{ conta.venda.numero_parcelas }}</span>
+                                        {% if conta.venda %}
+                                            <span class="badge bg-info">{{ conta.numero_parcela }}/{{ conta.venda.numero_parcelas }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Única</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {{ conta.data_vencimento.strftime('%d/%m/%Y') }}

@@ -210,16 +210,17 @@ class ItemVenda(db.Model):
 # Modelo de Conta a Receber
 class ContaReceber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
+    venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=False)
-    vendedor_id = db.Column(db.Integer, db.ForeignKey('vendedor.id'), nullable=False)
-    numero_parcela = db.Column(db.Integer, nullable=False)  # 1, 2, 3, etc.
+    vendedor_id = db.Column(db.Integer, db.ForeignKey('vendedor.id'), nullable=True)
+    numero_parcela = db.Column(db.Integer, nullable=False, default=1)  # 1, 2, 3, etc.
     data_vencimento = db.Column(db.DateTime, nullable=False)
     valor_parcela = db.Column(db.Numeric(10, 2), nullable=False)
     valor_pago = db.Column(db.Numeric(10, 2), default=0)
     data_pagamento = db.Column(db.DateTime)
     banco_id = db.Column(db.Integer, db.ForeignKey('banco.id'), nullable=True)
     status = db.Column(db.String(20), default='Pendente')  # Pendente, Pago, Atrasado
+    tipo_conta = db.Column(db.String(20), default='Venda')  # Venda ou Avulsa
     observacoes = db.Column(db.Text)
     data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
     usuario_cadastro = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -571,7 +572,10 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        user = User.query.filter_by(username=username).first()
+        user = None
+        if username:
+            normalized_username = username.lower()
+            user = User.query.filter(func.lower(User.username) == normalized_username).first()
         
         if user and user.check_password(password):
             if user.ativo:
@@ -604,10 +608,12 @@ def cadastro():
         nome_completo = request.form.get('nome_completo')
         empresa_nome = request.form.get('empresa_nome')
         # Validações
-        if User.query.filter_by(username=username).first():
+        username_exists = User.query.filter(func.lower(User.username) == username.lower()).first() if username else None
+        if username_exists:
             flash('Nome de usuário já existe.', 'error')
             return render_template('cadastro.html')
-        if User.query.filter_by(email=email).first():
+        email_exists = User.query.filter(func.lower(User.email) == email.lower()).first() if email else None
+        if email_exists:
             flash('Email já cadastrado.', 'error')
             return render_template('cadastro.html')
         if password != confirm_password:
@@ -1225,10 +1231,15 @@ def baixar_conta_receber(conta_id):
         banco.saldo = float(banco.saldo) + valor_pago
         
         # Registrar movimentação
+        if conta.venda:
+            descricao = f'Recebimento - Cliente: {conta.cliente.nome} - Parcela {conta.numero_parcela}/{conta.venda.numero_parcelas}'
+        else:
+            descricao = f'Recebimento - Cliente: {conta.cliente.nome} - Conta Avulsa'
+        
         movimentacao = MovimentacaoBancaria(
             banco_id=banco_id,
             tipo='Entrada',
-            descricao=f'Recebimento - Cliente: {conta.cliente.nome} - Parcela {conta.numero_parcela}/{conta.venda.numero_parcelas}',
+            descricao=descricao,
             valor=valor_pago,
             saldo_anterior=float(banco.saldo) - valor_pago,
             saldo_novo=float(banco.saldo),
@@ -1852,9 +1863,81 @@ def pagar_conta(conta_id):
         flash(f'Erro ao pagar parcela: {str(e)}', 'error')
         return redirect(url_for('contas_receber'))
 
+@app.route('/contas-receber/nova-avulsa', methods=['GET', 'POST'])
+@login_required
+def nova_conta_receber_avulsa():
+    if request.method == 'POST':
+        cliente_id = request.form.get('cliente_id')
+        data_vencimento = request.form.get('data_vencimento')
+        valor = request.form.get('valor')
+        observacoes = request.form.get('observacoes')
+        
+        if not cliente_id:
+            flash('Cliente é obrigatório.', 'error')
+            clientes = Cliente.query.filter_by(ativo=True, empresa_id=current_user.empresa_id).order_by(Cliente.nome).all()
+            return render_template('nova_conta_receber_avulsa.html', clientes=clientes)
+        
+        if not data_vencimento:
+            flash('Data de vencimento é obrigatória.', 'error')
+            clientes = Cliente.query.filter_by(ativo=True, empresa_id=current_user.empresa_id).order_by(Cliente.nome).all()
+            return render_template('nova_conta_receber_avulsa.html', clientes=clientes)
+        
+        if not valor:
+            flash('Valor é obrigatório.', 'error')
+            clientes = Cliente.query.filter_by(ativo=True, empresa_id=current_user.empresa_id).order_by(Cliente.nome).all()
+            return render_template('nova_conta_receber_avulsa.html', clientes=clientes)
+        
+        try:
+            data_vencimento = datetime.strptime(data_vencimento, '%Y-%m-%d')
+            valor = float(valor.replace(',', '.'))
+        except ValueError:
+            flash('Formato de data ou valor inválido.', 'error')
+            clientes = Cliente.query.filter_by(ativo=True, empresa_id=current_user.empresa_id).order_by(Cliente.nome).all()
+            return render_template('nova_conta_receber_avulsa.html', clientes=clientes)
+        
+        conta = ContaReceber(
+            cliente_id=int(cliente_id),
+            data_vencimento=data_vencimento,
+            valor_parcela=valor,
+            numero_parcela=1,
+            tipo_conta='Avulsa',
+            status='Pendente',
+            observacoes=observacoes,
+            usuario_cadastro=current_user.id,
+            empresa_id=current_user.empresa_id
+        )
+        
+        db.session.add(conta)
+        db.session.commit()
+        
+        flash('Conta a receber avulsa cadastrada com sucesso!', 'success')
+        return redirect(url_for('contas_receber'))
+    
+    clientes = Cliente.query.filter_by(ativo=True, empresa_id=current_user.empresa_id).order_by(Cliente.nome).all()
+    return render_template('nova_conta_receber_avulsa.html', clientes=clientes)
+
 def gerar_recibo(conta):
     """Gera recibo de pagamento"""
     from datetime import datetime
+    
+    # Construir informações sobre a venda/conta
+    info_venda = ""
+    if conta.venda:
+        info_venda = f"""
+    VENDA:
+    Número: {conta.venda.numero_venda}
+    Parcela: {conta.numero_parcela}/{conta.venda.numero_parcelas}"""
+    else:
+        info_venda = f"""
+    CONTA:
+    Tipo: Avulsa
+    Descrição: {conta.observacoes if conta.observacoes else 'Sem descrição'}"""
+    
+    # Informações do vendedor
+    info_vendedor = ""
+    if conta.vendedor:
+        info_vendedor = f"""
+    Vendedor: {conta.vendedor.nome}"""
     
     recibo_texto = f"""
     ========================================
@@ -1867,17 +1950,11 @@ def gerar_recibo(conta):
     ========================================
     CLIENTE:
     Nome: {conta.cliente.nome}
-    CPF: {conta.cliente.cpf}
-    
-    VENDA:
-    Número: {conta.venda.numero_venda}
-    Parcela: {conta.numero_parcela}/{conta.venda.numero_parcelas}
+    CPF: {conta.cliente.cpf}{info_venda}
     
     ========================================
     VALOR PAGO: R$ {conta.valor_pago:.2f}
-    ========================================
-    
-    Vendedor: {conta.vendedor.nome}
+    ========================================{info_vendedor}
     
     ========================================
     Assinatura: _________________
@@ -1917,17 +1994,30 @@ def imprimir_bluetooth(conta_id):
         
         impressora = ImpressoraCoojprt(porta_serial="COM10")
         
+        # Preparar dados do recibo
         dados_recibo = {
             'data': conta.data_pagamento.strftime('%d/%m/%Y %H:%M'),
             'numero': conta.id,
             'cliente_nome': conta.cliente.nome,
             'cliente_cpf': conta.cliente.cpf,
-            'venda_numero': conta.venda.numero_venda,
-            'parcela': conta.numero_parcela,
-            'total_parcelas': conta.venda.numero_parcelas,
             'valor': float(conta.valor_pago),
-            'vendedor': conta.vendedor.nome
         }
+        
+        # Adicionar informações sobre venda se existir
+        if conta.venda:
+            dados_recibo['venda_numero'] = conta.venda.numero_venda
+            dados_recibo['parcela'] = conta.numero_parcela
+            dados_recibo['total_parcelas'] = conta.venda.numero_parcelas
+        else:
+            dados_recibo['venda_numero'] = 'Avulsa'
+            dados_recibo['parcela'] = 'N/A'
+            dados_recibo['total_parcelas'] = 'N/A'
+        
+        # Adicionar vendedor se existir
+        if conta.vendedor:
+            dados_recibo['vendedor'] = conta.vendedor.nome
+        else:
+            dados_recibo['vendedor'] = 'Sem vendedor'
         
         if impressora.imprimir_recibo_serial(dados_recibo):
             return jsonify({'success': True, 'message': 'Recibo enviado para impressora via serial (COM10)!'})

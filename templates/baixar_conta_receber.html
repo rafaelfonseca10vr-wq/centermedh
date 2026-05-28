@@ -23,19 +23,27 @@
                     {% endwith %}
 
                     <div class="alert alert-light border">
-                        <h6><strong>Informações da Venda</strong></h6>
+                        <h6><strong>{% if conta.venda %}Informações da Venda{% else %}Informações da Conta{% endif %}</strong></h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <p>
                                     <strong>Cliente:</strong><br>
                                     {{ conta.cliente.nome }}
                                 </p>
+                                {% if conta.vendedor %}
                                 <p>
                                     <strong>Vendedor:</strong><br>
                                     {{ conta.vendedor.nome }}
                                 </p>
+                                {% else %}
+                                <p>
+                                    <strong>Tipo:</strong><br>
+                                    <span class="badge bg-secondary">Conta Avulsa</span>
+                                </p>
+                                {% endif %}
                             </div>
                             <div class="col-md-6">
+                                {% if conta.venda %}
                                 <p>
                                     <strong>Número da Venda:</strong><br>
                                     {{ conta.venda.numero_venda }}
@@ -44,6 +52,18 @@
                                     <strong>Parcela:</strong><br>
                                     {{ conta.numero_parcela }}/{{ conta.venda.numero_parcelas }}
                                 </p>
+                                {% else %}
+                                <p>
+                                    <strong>Parcela:</strong><br>
+                                    Única
+                                </p>
+                                {% if conta.observacoes %}
+                                <p>
+                                    <strong>Descrição:</strong><br>
+                                    {{ conta.observacoes }}
+                                </p>
+                                {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                     </div>

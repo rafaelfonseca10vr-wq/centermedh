@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Conta a Receber - CENTERMEDH WEB SYSTEM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-money-bill-wave me-2"></i>Nova Conta a Receber (Avulsa)
+                </h4>
+                <p class="mb-0">Registre uma nova conta sem relacionar a uma venda</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="formContaAvulsa">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="cliente_id" class="form-label">
+                                <i class="fas fa-user me-1"></i>Cliente *
+                            </label>
+                            <select class="form-select" id="cliente_id" name="cliente_id" required>
+                                <option value="">Selecione o cliente</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="data_vencimento" class="form-label">
+                                <i class="fas fa-calendar-check me-1"></i>Data de Vencimento *
+                            </label>
+                            <input type="date" class="form-control" id="data_vencimento" name="data_vencimento" required>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="valor" class="form-label">
+                                <i class="fas fa-money-bill me-1"></i>Valor *
+                            </label>
+                            <input type="text" class="form-control" id="valor" name="valor" required placeholder="0.00" autocomplete="off">
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label for="observacoes" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Observações
+                            </label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3" placeholder="Adicione observações (opcional)"></textarea>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Nota:</strong> Esta é uma conta avulsa e não está relacionada a nenhuma venda ou nota fiscal.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-4">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-home me-1"></i>Menu
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('contas_receber') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const valorInput = document.getElementById('valor');
+
+    // Permitir digitação de valor com vírgula ou ponto
+    valorInput.addEventListener('keypress', function(e) {
+        const char = e.key;
+        const value = this.value;
+        
+        // Permitir números, vírgula e ponto
+        if (!/[\d,.]/.test(char) && e.key !== 'Backspace' && e.key !== 'Delete') {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
